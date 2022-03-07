@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message permission {
+	uint32 mode = 1;
+	uint32 uid = 2;
+	uint32 gid = 3;
+}
+
+message permissions {
+	map<string, permission> permission = 1;
+}
