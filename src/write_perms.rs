@@ -104,7 +104,7 @@ fn parse_input(input: &str, tx: PermSender, etx: ErrSender) {
 	};
 	let mut bytesreader = BytesReader::from_bytes(&bytes);
 	let permissions = match perms::permissions::from_reader(&mut bytesreader, &bytes) {
-		Ok(x) => x.clone(),
+		Ok(x) => x,
 		Err(x) => {
 			etx.send(Err(logging::format_log(file!(), line!(), &x.to_string()))).unwrap();
 			return;
@@ -127,7 +127,7 @@ fn write_values(rx: PermReceiver, etx: ErrSender, dry_mode: bool) {
 			Ok(x) => x
 		};
 		if !dry_mode {
-			match chown(file_data.0.clone(), Some(file_data.1.uid), Some(file_data.1.gid)) {
+			match chown(&file_data.0, Some(file_data.1.uid), Some(file_data.1.gid)) {
 				Ok(_) => (),
 				Err(x) => {
 					etx.send(Err(logging::format_log(file!(), line!(), &x.to_string()))).unwrap();
@@ -135,7 +135,7 @@ fn write_values(rx: PermReceiver, etx: ErrSender, dry_mode: bool) {
 				}
 			};
 			let permissions = Permissions::from_mode(file_data.1.mode);
-			match set_permissions(file_data.0.clone(), permissions) {
+			match set_permissions(&file_data.0, permissions) {
 				Ok(_) => (),
 				Err(x) => {
 					etx.send(Err(logging::format_log(file!(), line!(), &x.to_string()))).unwrap();

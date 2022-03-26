@@ -36,11 +36,13 @@ use zstd::Encoder;
 type ProtoString<'a> = Cow<'a, str>;
 type SendChannel<'a> = (crossbeam::channel::Sender<ProtoString<'a>>, crossbeam::channel::Receiver<ProtoString<'a>>);
 type StrResult = Result<(), String>;
+type ProtoHashMap<'a> = HashMap<ProtoString<'a>, permission>;
 
 pub fn read_perms(input: &str, outfile: &str) -> StrResult {
 	let (tx, rx): SendChannel = unbounded();
 	let (etx, erx): (crossbeam::channel::Sender<StrResult>, crossbeam::channel::Receiver<StrResult>) = unbounded();
-	let output_shared: Arc<Mutex<HashMap<ProtoString, permission>>> = Arc::new(Mutex::new(HashMap::new()));
+	let mut output: ProtoHashMap  = HashMap::new();
+	let output_shared: Arc<Mutex<&mut ProtoHashMap>> = Arc::new(Mutex::new(&mut output));
 
 	let avail_cpus = std::cmp::max(num_cpus::get() - 1, 1);
 
@@ -58,7 +60,7 @@ pub fn read_perms(input: &str, outfile: &str) -> StrResult {
 		}
 	}).unwrap();
 
-	write_values(output_shared.lock().as_mut().unwrap(), outfile)?;
+	write_values(output, outfile)?;
 
 	let mut err = "".to_string();
 
@@ -96,7 +98,7 @@ fn parse_input(input: &str, tx: crossbeam::channel::Sender<ProtoString>, etx: cr
 	}
 }
 
-fn lookup_values<'a>(output: Arc<Mutex<HashMap<Cow<'a, str>, perms::permission>>>, rx: crossbeam::channel::Receiver<Cow<'a, str>>) {
+fn lookup_values<'a>(output: Arc<Mutex<&mut ProtoHashMap<'a>>>, rx: crossbeam::channel::Receiver<Cow<'a, str>>) {
 	let mut cache_vec: Vec<(Cow<'_, str>, perms::permission)> = Vec::with_capacity(50);
 	loop {
 		let file_path = match rx.try_recv() {
@@ -118,7 +120,7 @@ fn lookup_values<'a>(output: Arc<Mutex<HashMap<Cow<'a, str>, perms::permission>>
 			gid: file_metadata.gid()
 		};
 		if let Ok(mut x) = output.try_lock() {
-			x.insert(file_path, perm.clone());
+			x.insert(file_path, perm);
 			while !cache_vec.is_empty() {
 				let p = cache_vec.pop().unwrap();
 				x.insert(p.0, p.1);
@@ -129,7 +131,7 @@ fn lookup_values<'a>(output: Arc<Mutex<HashMap<Cow<'a, str>, perms::permission>>
 	}
 }
 
-fn write_values(input: &mut HashMap<Cow<'_, str>, perms::permission>, output: &str) -> StrResult {
+fn write_values(input: ProtoHashMap, output: &str) -> StrResult {
 	let o = perms::permissions {
 		permission: input.clone()
 	};
