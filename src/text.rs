@@ -1,10 +1,9 @@
-pub fn license() -> &'static str {"textperms  Copyright (C) 2022  BlockListed
+pub const LICENSE: &str = "textperms  Copyright (C) 2022  BlockListed
 This program comes with ABSOLUTELY NO WARRANTY; for details type `textperms -h'.
 This is free software, and you are welcome to redistribute it
-under certain conditions; type `textperms --help' for details."
-}
+under certain conditions; type `textperms --help' for details.";
 
-pub fn full_license() -> &'static str {"textperms: save uids, gids, and modes of unix files to a textfile and apply them
+pub const FULL_LICENSE: &str = "textperms: save uids, gids, and modes of unix files to a textfile and apply them
 Copyright (C) 2022  BlockListed
 
 This program is free software: you can redistribute it and/or modify
@@ -18,4 +17,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>."}
+along with this program.  If not, see <https://www.gnu.org/licenses/>.";

@@ -52,7 +52,7 @@ struct Args {
 }
 
 fn main() -> Result<(), Error> {
-    let args = Args::command().before_help(text::license()).before_long_help(text::full_license()).get_matches();
+    let args = Args::command().before_help(text::LICENSE).before_long_help(text::FULL_LICENSE).get_matches();
     if args.occurrences_of("write") > 0 {
         let dry_run = args.occurrences_of("dryrun") > 0;
         if let Err(x) = write_perms::write_perms(args.value_of("file").unwrap(), dry_run) {
