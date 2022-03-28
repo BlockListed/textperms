@@ -46,6 +46,9 @@ struct Args {
     #[clap(long = "dry-run", short)]
     dryrun: bool,
 
+    /// Force exact path
+    #[clap(long = "force-path")]
+    forcepath: bool,
 }
 
 fn main() -> Result<(), Error> {
@@ -62,7 +65,7 @@ fn main() -> Result<(), Error> {
     }
     if let Some(x) = args.value_of("outfile") {
         let mut outfile = x.to_string();
-        if !outfile.ends_with(".zstd") {
+        if !outfile.ends_with(".zstd") && args.occurrences_of("forcepath") == 0 {
             outfile.push_str(".zstd");
         }
         if let Err(x) = read_perms::read_perms(args.value_of("file").unwrap(), outfile.as_str()) {

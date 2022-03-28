@@ -133,7 +133,7 @@ fn lookup_values<'a>(output: Arc<Mutex<&mut ProtoHashMap<'a>>>, rx: crossbeam::c
 
 fn write_values(input: ProtoHashMap, output: &str) -> StrResult {
 	let o = perms::permissions {
-		permission: input.clone()
+		permission: input
 	};
 	let p = std::path::Path::new(output);
 	if p.is_file() {
