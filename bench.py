@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import random, string, os, subprocess, shutil, pdb
+import random, string, os, subprocess, shutil
 from pathlib import Path
 
 def gen_string(path_len: int = 16) -> str:
@@ -32,8 +32,6 @@ def main(maxpaths: int = 2**8):
 	p = subprocess.Popen(["sh", "-c", f"hyperfine -N \"dockertarget/textperms --force-path -f {infile} -o /dev/null\""])
 	p.wait()
 	unsetup()
-
-	
 
 if __name__ == "__main__":
 	maxpaths: int = 2**20

@@ -166,8 +166,8 @@ fn write_values_stdout(input: ProtoHashMap) -> StrResult {
 		}
 	};
 
-	if o.write_message(&mut quick_protobuf::Writer::new(&mut outfile)).is_err() {
-		return Err(logging::format_log(file!(), line!(), "Couldn't writer error to output file"));
+	if let Err(x) = o.write_message(&mut quick_protobuf::Writer::new(&mut outfile)) {
+		return Err(logging::format_log(file!(), line!(), &x.to_string()));
 	};
 	outfile.finish().unwrap();
 	Ok(())
@@ -207,8 +207,8 @@ fn write_values(input: ProtoHashMap, output: &str) -> StrResult {
 			return Err(logging::format_log(file!(), line!(), &x.to_string()));
 		}
 	};
-	if o.write_message(&mut quick_protobuf::Writer::new(&mut outfile)).is_err() {
-		return Err(logging::format_log(file!(), line!(), "Couldn't writer error to output file"));
+	if let Err(x) = o.write_message(&mut quick_protobuf::Writer::new(&mut outfile)) {
+		return Err(logging::format_log(file!(), line!(), &x.to_string()));
 	};
 	outfile.finish().unwrap();
 
