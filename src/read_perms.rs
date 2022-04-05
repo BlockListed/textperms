@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::fs::OpenOptions;
-use std::io::BufWriter;
+use std::io::{BufWriter, Read};
 
 use crate::perms::{self, permission};
 use crate::logging;
@@ -60,7 +60,14 @@ pub fn read_perms(input: &str, outfile: &str) -> StrResult {
 		}
 	}).unwrap();
 
-	write_values(output, outfile)?;
+	match outfile {
+		"-" => {
+			write_values_stdout(output)?;
+		},
+		x => {
+			write_values(output, x)?;
+		}
+	}
 
 	let mut err = "".to_string();
 
@@ -79,13 +86,22 @@ pub fn read_perms(input: &str, outfile: &str) -> StrResult {
 }
 
 fn parse_input(input: &str, tx: crossbeam::channel::Sender<ProtoString>, etx: crossbeam::channel::Sender<StrResult>) {
-	let instr = match fs::read_to_string(input) {
-		Ok(x) => x,
-		Err(x) => {
+	let mut instr: String = String::new();
+
+	if input == "-" {
+		if let Err(x) = std::io::stdin().read_to_string(&mut instr) {
 			etx.send(Err(logging::format_log(file!(), line!(), &x.to_string()))).unwrap();
 			return;
 		}
-	};
+	} else {
+		instr = match fs::read_to_string(input) {
+			Ok(x) => x,
+			Err(x) => {
+				etx.send(Err(logging::format_log(file!(), line!(), &x.to_string()))).unwrap();
+				return;
+			}
+		};
+	}
 	for i in instr.split('\n') {
 		match tx.send(i.to_string().try_into().unwrap()) {
 			Ok(_) => (),
@@ -129,6 +145,32 @@ fn lookup_values<'a>(output: Arc<Mutex<&mut ProtoHashMap<'a>>>, rx: crossbeam::c
 			cache_vec.append(&mut vec![(file_path, perm)]);
 		}
 	}
+}
+
+fn write_values_stdout(input: ProtoHashMap) -> StrResult {
+	let o = perms::permissions {
+		permission: input
+	};
+
+	let mut outfile = match Encoder::new(BufWriter::new(std::io::stdout()), 3) {
+		Ok(x) => x,
+		Err(x) => {
+			return Err(logging::format_log(file!(), line!(), &x.to_string()));
+		}
+	};
+
+	match outfile.multithread((num_cpus::get()-1).try_into().unwrap()) {
+		Ok(_) => (),
+		Err(x) => {
+			return Err(logging::format_log(file!(), line!(), &x.to_string()));
+		}
+	};
+
+	if o.write_message(&mut quick_protobuf::Writer::new(&mut outfile)).is_err() {
+		return Err(logging::format_log(file!(), line!(), "Couldn't writer error to output file"));
+	};
+	outfile.finish().unwrap();
+	Ok(())
 }
 
 fn write_values(input: ProtoHashMap, output: &str) -> StrResult {

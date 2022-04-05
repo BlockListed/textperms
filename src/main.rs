@@ -65,7 +65,7 @@ fn main() -> Result<(), Error> {
     }
     if let Some(x) = args.value_of("outfile") {
         let mut outfile = x.to_string();
-        if !outfile.ends_with(".zstd") && args.occurrences_of("forcepath") == 0 {
+        if !outfile.ends_with(".zstd") && args.occurrences_of("forcepath") == 0 && outfile != "-" {
             outfile.push_str(".zstd");
         }
         if let Err(x) = read_perms::read_perms(args.value_of("file").unwrap(), outfile.as_str()) {
