@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#![feature(unix_chown)]
-
-mod text;
 mod perms;
+mod text;
 
+mod logging;
 mod read_perms;
 mod write_perms;
-mod logging;
 
 use clap::IntoApp;
 use clap::Parser;
@@ -52,13 +50,15 @@ struct Args {
 }
 
 fn main() -> Result<(), Error> {
-    let args = Args::command().before_help(text::LICENSE).before_long_help(text::FULL_LICENSE).get_matches();
+    let args = Args::command()
+        .before_help(text::LICENSE)
+        .before_long_help(text::FULL_LICENSE)
+        .get_matches();
     if args.occurrences_of("write") > 0 {
         let dry_run = args.occurrences_of("dryrun") > 0;
         if let Err(x) = write_perms::write_perms(args.value_of("file").unwrap(), dry_run) {
-            Args::command().error(
-                clap::ErrorKind::InvalidValue, 
-                x)
+            Args::command()
+                .error(clap::ErrorKind::InvalidValue, x)
                 .exit();
         }
         return Ok(());
@@ -69,17 +69,17 @@ fn main() -> Result<(), Error> {
             outfile.push_str(".zstd");
         }
         if let Err(x) = read_perms::read_perms(args.value_of("file").unwrap(), outfile.as_str()) {
-                Args::command().error(
-                    clap::ErrorKind::InvalidValue, 
-                    x)
-                    .exit();
+            Args::command()
+                .error(clap::ErrorKind::InvalidValue, x)
+                .exit();
         }
     } else {
-        Args::command().error(
-            clap::ErrorKind::MissingRequiredArgument,
-            "--outfile is required when reading permissions!"
-        )
-        .exit();
+        Args::command()
+            .error(
+                clap::ErrorKind::MissingRequiredArgument,
+                "--outfile is required when reading permissions!",
+            )
+            .exit();
     }
     Ok(())
 }

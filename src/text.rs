@@ -3,7 +3,8 @@ This program comes with ABSOLUTELY NO WARRANTY; for details type `textperms -h'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type `textperms --help' for details.";
 
-pub const FULL_LICENSE: &str = "textperms: save uids, gids, and modes of unix files to a textfile and apply them
+pub const FULL_LICENSE: &str =
+    "textperms: save uids, gids, and modes of unix files to a textfile and apply them
 Copyright (C) 2022  BlockListed
 
 This program is free software: you can redistribute it and/or modify
